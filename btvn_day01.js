@@ -2,71 +2,93 @@ import express from "express";
 
 const app = express();
 app.use(express.json());
-
-let products = [
-  {
-    id: 1,
-    title: "Product 1",
-    price: 1000,
-  },
-  {
-    id: 2,
-    title: "Product 2",
-    price: 2000,
-  },
-  {
-    id: 3,
-    title: "Product 3",
-    price: 3000,
-  },
-];
+const uri = "http://localhost:3000";
 
 // lấy ra tất cả
 app.get("/products", (req, res) => {
-  res.send(products);
+  fetch(`${url}/products`)
+    .then((res) => res.json())
+    .then((data) => {
+      res.send({ message: "Hoàn tất lấy tất cả sản phẩm", product: data });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send({ message: "Lấy toàn bộ sản phẩm thất bại" });
+    });
 });
 // lấy ra 1
 app.get("/products/:id", (req, res) => {
   const productId = parseInt(req.params.id);
-  const product = products.find((p) => p.id === productId);
-  if (!product) {
-    res.send({ message: "Product not found" });
-  } else {
-    res.send(products[productId - 1]);
-  }
+  fetch(`${url}/products`)
+    .then((res) => res.json())
+    .then((data) => {
+      res.send({ message: `sp id: ${productId}`, product: data });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send({ message: "Product not found" });
+    });
 });
 
 // thêm 1
 app.post("/products", (req, res) => {
-  const newProduct = { id: products.length + 1, ...req.body };
-  console.log(newUser);
-  products.push(newUser);
-
-  res.send({
-    message: "Them thanh cong",
-    products,
-  });
+  const newProduct = req.body;
+  fetch(`${uri}/products`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newProduct),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      res.status(201).send({ message: "Them thanh cong", product: data });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send({ message: "Them that bai" });
+    });
 });
 
 // update
 app.put("/products/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const updatedData = req.body;
-  let productUpdate = products.findIndex((product) => product.id === id);
-
-  products[productUpdate] = { ...updatedData };
-  res.send(products[productUpdate]);
+  fetch(`${uri}/products/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedData),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      res.status(201).send({ message: "cap nhat thanh cong", product: data });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send({ message: "cap nhat that bai" });
+    });
 });
 
 // xoá 1
 app.delete("/products/:id", (req, res) => {
   const id = parseInt(req.params.id);
 
-  products = products.filter((product) => product.id !== id);
-  res.send({
-    message: "xoa thanh cong",
-    products,
-  });
+  fetch(`${uri}/products/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      res.status(201).send({ message: "xoa thanh cong" });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.send({ message: "xoa that bai" });
+    });
 });
 
 app.use((req, res) => {
